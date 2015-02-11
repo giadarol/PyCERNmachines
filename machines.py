@@ -78,9 +78,13 @@ class synchrotron(object):
 		return np.sqrt( e*np.abs(self.eta)*(self.h1*self.V1 + self.h2*self.V2)
 						/(2*np.pi*self.p0*self.beta*c) )
 
-	def track(self, bunch):
+	def track(self, bunch, verbose = False):
 		for m in self.one_turn_map:
+			if verbose:
+				print 'Tracking through:'
+				print m
 			m.track(bunch)
+			
 			
 	def create_transverse_map(self):
 		self.transverse_map = TransverseMap(
@@ -103,12 +107,18 @@ class synchrotron(object):
 
 	def generate_6D_Gaussian_bunch(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
 		if self.longitudinal_focusing == 'linear':
-			raise ValueError('This mode is not compatible with the current implementations')
+			check_inside_bucket = lambda z,dp : np.array(len(z)*[True])
+		elif self.longitudinal_focusing == 'non-linear':
+			check_inside_bucket = self.longitudinal_map.rfbucket.make_is_accepted(margin = 0.05)
+		else:
+			raise ValueError('Longitudinal_focusing not recognized!!!')
+		
+			
 		beta_z    = self.eta*self.circumference/2./np.pi/self.Q_s
 		sigma_dp  = sigma_z/beta_z
 		return CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity, charge=self.charge, mass=self.mass,
                  circumference = self.circumference, gamma_reference=self.gamma,
                  transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
                  sigma_z=sigma_z, sigma_dp=sigma_dp,
-                 is_accepted=self.longitudinal_map.rfbucket.make_is_accepted(margin = 0.05)).generate()
+                 is_accepted=check_inside_bucket).generate()
       
