@@ -94,12 +94,7 @@ class synchrotron(object):
 	def create_longitudinal_map(self):
 
 		if self.longitudinal_focusing == 'linear':
-			raise ValueError('''longitudinal_focusing='linear' not tested!!!''')
-			#~ eta = self.alpha - self.gamma**-2
-			#~ p0 = np.sqrt(self.gamma**2 - 1) * m_p * c
-			#~ Q_s = np.sqrt( e*np.abs(eta)*(self.h1*self.V1 + self.h2*self.V2)
-						 #~ /(2*np.pi*p0*beta*c) )
-			#~ self.longitudinal_map = LinearMap([self.alpha], self.circumference, self.Q_s())
+			self.longitudinal_map = LinearMap([self.alpha], self.circumference, self.Q_s)
 		elif self.longitudinal_focusing == 'non-linear':
 			self.longitudinal_map = RFSystems(self.circumference, [self.h1, self.h2], [self.V1, self.V2], [self.dphi1, self.dphi2],
 										[self.alpha], self.gamma, self.p_increment)
