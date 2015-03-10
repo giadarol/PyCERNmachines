@@ -109,7 +109,7 @@ class synchrotron(object):
 		if self.longitudinal_focusing == 'linear':
 			check_inside_bucket = lambda z,dp : np.array(len(z)*[True])
 		elif self.longitudinal_focusing == 'non-linear':
-			check_inside_bucket = self.longitudinal_map.rfbucket.make_is_accepted(margin = 0.05)
+			check_inside_bucket = self.longitudinal_map.get_bucket(self.gamma).make_is_accepted(margin = 0.05)
 		else:
 			raise ValueError('Longitudinal_focusing not recognized!!!')
 		
