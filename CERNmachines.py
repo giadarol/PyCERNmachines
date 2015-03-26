@@ -6,6 +6,128 @@ from scipy.constants import c, e, m_p
 from machines import synchrotron
 
 
+class PSB(synchrotron):
+
+    def __init__(self, *args, **kwargs):
+
+        if 'n_segments' not in kwargs.keys():
+            raise ValueError('Number of segments must be specified')
+
+        if 'machine_configuration' not in kwargs.keys():
+            raise ValueError('machine_configuration must be specified')
+
+        self.n_segments = kwargs['n_segments']
+        self.machine_configuration = kwargs['machine_configuration']
+
+        self.circumference  = 50*np.pi
+        self.s = (np.arange(0, self.n_segments + 1)
+                  * self.circumference / self.n_segments)
+
+        if self.machine_configuration == '160MeV':
+            self.charge = e
+            self.mass = m_p
+
+            self.gamma = 160e6*e/(self.mass*c**2) + 1
+
+            self.Q_x     = 4.23
+            self.Q_y     = 4.37
+
+            self.Qp_x    = -1*self.Q_x
+            self.Qp_y    = -2*self.Q_y
+
+            self.app_x   = 0.0000e-9
+            self.app_y   = 0.0000e-9
+            self.app_xy  = 0
+
+            self.alpha_x = 0 * np.ones(self.n_segments)
+            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments)
+            self.D_x     = 0 * np.ones(self.n_segments)
+            self.alpha_y = 0 * np.ones(self.n_segments)
+            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments)
+            self.D_y     = 0 * np.ones(self.n_segments)
+
+            self.alpha       = 0.06
+            self.h1          = 1
+            self.h2          = 2
+            self.V1          = 8e3
+            self.V2          = 0
+            self.dphi1       = 0
+            self.dphi2       = np.pi
+            self.p_increment = 0 * e/c * self.circumference/(self.beta*c)
+
+            self.longitudinal_focusing = 'non-linear'
+
+        elif self.machine_configuration == '1GeV':
+            self.charge = e
+            self.mass = m_p
+
+            self.gamma = 1e9*e/(self.mass*c**2) + 1
+
+            self.Q_x     = 4.23
+            self.Q_y     = 4.37
+
+            self.Qp_x    = -1*self.Q_x
+            self.Qp_y    = -2*self.Q_y
+
+            self.app_x   = 0.0000e-9
+            self.app_y   = 0.0000e-9
+            self.app_xy  = 0
+
+            self.alpha_x = 0 * np.ones(self.n_segments)
+            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments)
+            self.D_x     = 0 * np.ones(self.n_segments)
+            self.alpha_y = 0 * np.ones(self.n_segments)
+            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments)
+            self.D_y     = 0 * np.ones(self.n_segments)
+
+            self.alpha       = 0.06
+            self.h1          = 1
+            self.h2          = 2
+            self.V1          = 8e3
+            self.V2          = 0
+            self.dphi1       = 0
+            self.dphi2       = np.pi
+            self.p_increment = 0 * e/c * self.circumference/(self.beta*c)
+
+            self.longitudinal_focusing = 'non-linear'
+
+        elif self.machine_configuration == '1.4GeV':
+            self.charge = e
+            self.mass = m_p
+
+            self.gamma = 1.4e9*e/(self.mass*c**2) + 1
+
+            self.Q_x     = 4.23
+            self.Q_y     = 4.37
+
+            self.Qp_x    = -1*self.Q_x
+            self.Qp_y    = -2*self.Q_y
+
+            self.app_x   = 0.0000e-9
+            self.app_y   = 0.0000e-9
+            self.app_xy  = 0
+
+            self.alpha_x = 0 * np.ones(self.n_segments)
+            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments)
+            self.D_x     = 0 * np.ones(self.n_segments)
+            self.alpha_y = 0 * np.ones(self.n_segments)
+            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments)
+            self.D_y     = 0 * np.ones(self.n_segments)
+
+            self.alpha       = 0.06
+            self.h1          = 1
+            self.h2          = 2
+            self.V1          = 8e3
+            self.V2          = 0
+            self.dphi1       = 0
+            self.dphi2       = np.pi
+            self.p_increment = 0 * e/c * self.circumference/(self.beta*c)
+
+            self.longitudinal_focusing = 'non-linear'
+
+        super(PSB, self).__init__(*args, **kwargs)
+
+
 class SPS(synchrotron):
 
     def __init__(self, *args, **kwargs):

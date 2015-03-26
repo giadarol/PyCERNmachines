@@ -125,14 +125,15 @@ class synchrotron(Element):
         else:
             raise ValueError('Longitudinal_focusing not recognized!!!')
 
-        beta_z    = self.eta*self.circumference/2./np.pi/self.Q_s
+        beta_z    = np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
         sigma_dp  = sigma_z/beta_z
 
-        return CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity, charge=self.charge, mass=self.mass,
-                 circumference = self.circumference, gamma_reference=self.gamma,
-                 transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
-                 sigma_z=sigma_z, sigma_dp=sigma_dp,
-                 is_accepted=check_inside_bucket).generate()
+        return CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
+                             charge=self.charge, mass=self.mass,
+                             circumference = self.circumference, gamma_reference=self.gamma,
+                             transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
+                             sigma_z=sigma_z, sigma_dp=sigma_dp,
+                             is_accepted=check_inside_bucket).generate()
 
     def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
         '''
