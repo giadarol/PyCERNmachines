@@ -135,7 +135,7 @@ class synchrotron(Element):
                 is_accepted=check_inside_bucket).generate()
 
         if self.D_x[0] != 0:
-            self.warns(('\nCorrecting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
+            self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
 
         return bunch
@@ -156,7 +156,7 @@ class synchrotron(Element):
                                 transverse_map=self.transverse_map,
                                 rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
         if self.D_x[0] != 0:
-            self.warns(('\nCorrecting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
+            self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
 
         return bunch
