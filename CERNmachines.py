@@ -124,6 +124,8 @@ class PSB(synchrotron):
             self.p_increment = 0 * e/c * self.circumference/(self.beta*c)
 
             self.longitudinal_focusing = 'non-linear'
+        else:
+            raise ValueError('Unknown configuration '+self.machine_configuration)
 
         super(PSB, self).__init__(*args, **kwargs)
 
