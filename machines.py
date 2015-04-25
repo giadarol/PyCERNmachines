@@ -77,6 +77,10 @@ class synchrotron(Element):
         return np.sqrt( e*np.abs(self.eta)*(self.h1*self.V1 + self.h2*self.V2)
                         / (2*np.pi*self.p0*self.beta*c) )
 
+    @proprty
+    def R(self):
+        return self.circumference/(2*np.pi)
+
     def track(self, bunch, verbose = False):
         for m in self.one_turn_map:
             if verbose:
