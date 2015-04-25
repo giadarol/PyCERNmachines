@@ -130,7 +130,7 @@ class synchrotron(Element):
 
         return CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
                              charge=self.charge, mass=self.mass,
-                             circumference = self.circumference, gamma_reference=self.gamma,
+                             circumference = self.circumference, gamma=self.gamma,
                              transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
                              sigma_z=sigma_z, sigma_dp=sigma_dp,
                              is_accepted=check_inside_bucket).generate()
@@ -146,7 +146,7 @@ class synchrotron(Element):
         '''
         return MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
                                charge=self.charge, mass=self.mass,
-                               circumference=self.circumference, gamma_reference=self.gamma,
+                               circumference=self.circumference, gamma=self.gamma,
                                epsn_x=epsn_x, epsn_y=epsn_y, sigma_z=sigma_z,
                                transverse_map=self.transverse_map,
                                rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
