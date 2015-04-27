@@ -72,7 +72,7 @@ class synchrotron(Element):
 
     @property
     def Q_s(self):
-        if self.V2!=0. or self.p_increment!=0 or self.dphi1!=0:
+        if self.p_increment!=0 or self.dphi1!=0:
             raise ValueError('Formula not valid in this case!!!!')
         return np.sqrt( e*np.abs(self.eta)*(self.h1*self.V1 + self.h2*self.V2)
                         / (2*np.pi*self.p0*self.beta*c) )
@@ -132,12 +132,17 @@ class synchrotron(Element):
         beta_z    = np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
         sigma_dp  = sigma_z/beta_z
 
-        return CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
-                             charge=self.charge, mass=self.mass,
-                             circumference = self.circumference, gamma=self.gamma,
-                             transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
-                             sigma_z=sigma_z, sigma_dp=sigma_dp,
-                             is_accepted=check_inside_bucket).generate()
+        bunch = CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity, charge=self.charge, mass=self.mass,
+                circumference = self.circumference, gamma_reference=self.gamma,
+                transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
+                sigma_z=sigma_z, sigma_dp=sigma_dp,
+                is_accepted=check_inside_bucket).generate()
+
+        if self.D_x[0] != 0:
+            self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
+            bunch.x += bunch.dp*self.D_x[0]
+
+        return bunch
 
     def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
         '''
@@ -148,9 +153,14 @@ class synchrotron(Element):
         to the one specificed and should not change significantly during the
         synchrotron motion.
         '''
-        return MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
-                               charge=self.charge, mass=self.mass,
-                               circumference=self.circumference, gamma=self.gamma,
-                               epsn_x=epsn_x, epsn_y=epsn_y, sigma_z=sigma_z,
-                               transverse_map=self.transverse_map,
-                               rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
+        bunch = MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
+                                charge=self.charge, mass=self.mass,
+                                circumference=self.circumference, gamma_reference=self.gamma,
+                                epsn_x=epsn_x, epsn_y=epsn_y, sigma_z=sigma_z,
+                                transverse_map=self.transverse_map,
+                                rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
+        if self.D_x[0] != 0:
+            self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
+            bunch.x += bunch.dp*self.D_x[0]
+
+        return bunch
