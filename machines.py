@@ -78,6 +78,10 @@ class synchrotron(Element):
                         / (2*np.pi*self.p0*self.beta*c) )
 
     @property
+    def beta_z(self):
+        return np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
+
+    @property
     def R(self):
         return self.circumference/(2*np.pi)
 
