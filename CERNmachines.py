@@ -357,7 +357,7 @@ class HLLHC(synchrotron):
 
             self.gamma = np.sqrt( (7000e9*e/(self.mass*c**2))**2 + 1 )
 
-            self.Q_x     = 60.31
+            self.Q_x     = 62.31
             self.Q_y     = 60.32
 
             self.alpha_x = 0 * np.ones(self.n_segments)
