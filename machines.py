@@ -10,7 +10,7 @@ from PyHEADTAIL.trackers.detuners import Chromaticity, AmplitudeDetuning
 from PyHEADTAIL.trackers.simple_long_tracking import LinearMap, RFSystems
 
 
-class synchrotron(Element):
+class Synchrotron(Element):
 
     def __init__(self, *args, **kwargs):
 
@@ -120,7 +120,7 @@ class synchrotron(Element):
     def generate_6D_Gaussian_bunch(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
         '''
         Generates a 6D Gaussian distribution of particles which is transversely
-        matched to the synchrotron. Longitudinally, the distribution is matched
+        matched to the Synchrotron. Longitudinally, the distribution is matched
         only in terms of linear focusing. For a non-linear bucket, the Gaussian
         distribution is cut along the separatrix (with some margin) and will
         gradually filament into the bucket. This will change the specified bunch
@@ -155,7 +155,7 @@ class synchrotron(Element):
         to exactly yield the given bunch length while at the same time being
         stationary in the non-linear bucket. Thus, the bunch length should amount
         to the one specificed and should not change significantly during the
-        synchrotron motion.
+        Synchrotron motion.
         '''
         bunch = MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
                                 charge=self.charge, mass=self.mass,

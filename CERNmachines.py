@@ -3,10 +3,10 @@ from __future__ import division
 import numpy as np
 from scipy.constants import c, e, m_p
 
-from machines import synchrotron
+from machines import Synchrotron
 
 
-class PSB(synchrotron):
+class PSB(Synchrotron):
 
     def __init__(self, *args, **kwargs):
 
@@ -130,7 +130,7 @@ class PSB(synchrotron):
         super(PSB, self).__init__(*args, **kwargs)
 
 
-class SPS(synchrotron):
+class SPS(Synchrotron):
 
     def __init__(self, *args, **kwargs):
 
@@ -246,7 +246,7 @@ class SPS(synchrotron):
         super(SPS, self).__init__(*args, **kwargs)
 
 
-class LHC(synchrotron):
+class LHC(Synchrotron):
 
     def __init__(self, *args, **kwargs):
 
@@ -334,7 +334,7 @@ class LHC(synchrotron):
         super(LHC, self).__init__(*args, **kwargs)
 
 
-class HLLHC(synchrotron):
+class HLLHC(Synchrotron):
 
     def __init__(self, *args, **kwargs):
 
@@ -374,7 +374,7 @@ class HLLHC(synchrotron):
             self.app_y   = 0.0000e-9
             self.app_xy  = 0
 
-            self.alpha       = 0.0003225
+            self.alpha       = 53.83**-2
             self.h1          = 35640
             self.h2          = 71280
             self.V1          = 16e6
