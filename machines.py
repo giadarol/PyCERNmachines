@@ -93,11 +93,8 @@ class Synchrotron(Element):
             m.track(bunch)
 
     def create_transverse_map(self):
-        try:
-            chromaticity = Chromaticity(self.Qp_x, self.Qp_y)
-        except TypeError as error:
-            chromaticity = Chromaticity([self.Qp_x], [self.Qp_y])
-            self.warns('Converted to new interface - takes chromaticities as lists.')
+
+        chromaticity = Chromaticity(self.Qp_x, self.Qp_y)
         amplitude_detuning = AmplitudeDetuning(self.app_x, self.app_y, self.app_xy)
 
         self.transverse_map = TransverseMap(
@@ -148,7 +145,7 @@ class Synchrotron(Element):
 
         return bunch
 
-    def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
+    def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z=None, epsn_z=None):
         '''
         Generates a 6D Gaussian distribution of particles which is transversely
         as well as longitudinally matched. The distribution is found iteratively
@@ -160,7 +157,7 @@ class Synchrotron(Element):
         bunch = MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
                                 charge=self.charge, mass=self.mass,
                                 circumference=self.circumference, gamma=self.gamma,
-                                epsn_x=epsn_x, epsn_y=epsn_y, sigma_z=sigma_z,
+                                epsn_x=epsn_x, epsn_y=epsn_y, epsn_z=epsn_z, sigma_z=sigma_z,
                                 transverse_map=self.transverse_map,
                                 rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
         if self.D_x[0] != 0:
