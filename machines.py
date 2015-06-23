@@ -107,10 +107,12 @@ class Synchrotron(Element):
     def create_longitudinal_map(self):
 
         if self.longitudinal_focusing == 'linear':
-            self.longitudinal_map = LinearMap([self.alpha], self.circumference, self.Q_s)
+            self.longitudinal_map = LinearMap([self.alpha], self.circumference,
+                    self.Q_s, D_x=self.D_x[0], D_y=self.D_y[0])
         elif self.longitudinal_focusing == 'non-linear':
             self.longitudinal_map = RFSystems(self.circumference, [self.h1, self.h2], [self.V1, self.V2], [self.dphi1, self.dphi2],
-                                        [self.alpha], self.gamma, self.p_increment)
+                                        [self.alpha], self.gamma, self.p_increment,
+                                        D_x=self.D_x[0], D_y=self.D_y[0])
         else:
             raise ValueError('ERROR: unknown focusing', self.longitudinal_focusing)
 
