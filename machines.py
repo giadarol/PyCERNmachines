@@ -144,6 +144,10 @@ class Synchrotron(Element):
         if self.D_x[0] != 0:
             self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
+        if self.D_y[0] != 0:
+            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
+            bunch.y += bunch.dp*self.D_y[0]
+
 
         return bunch
 
@@ -165,5 +169,9 @@ class Synchrotron(Element):
         if self.D_x[0] != 0:
             self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
+        if self.D_y[0] != 0:
+            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
+            bunch.y += bunch.dp*self.D_y[0]
+
 
         return bunch
