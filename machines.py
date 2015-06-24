@@ -25,7 +25,6 @@ class Synchrotron(Element):
                 setattr(self, attr, kwargs[attr])
 
         self.create_transverse_map()
-        self.create_longitudinal_map()
 
         # create the one_turn map: install the longitudinal map at
         # s = circumference/2
@@ -39,10 +38,9 @@ class Synchrotron(Element):
             insert_before = len(self.one_turn_map) // 2
         else:
             insert_before = len(self.one_turn_map) // 2 + 1
-        print insert_before
-        print self.one_turn_map
+        n_segments = len(self.transverse_map)
+        self.create_longitudinal_map(insert_before % n_segments)
         self.one_turn_map.insert(insert_before, self.longitudinal_map)
-        print self.one_turn_map
 
     def install_after_each_transverse_segment(self, element_to_add):
         '''Attention: Do not add any elements which update the dispersion!'''
@@ -121,15 +119,23 @@ class Synchrotron(Element):
             self.Q_x, self.Q_y,
             chromaticity, amplitude_detuning)
 
-    def create_longitudinal_map(self):
+    def create_longitudinal_map(self, one_turn_map_insert_idx=0):
 
         if self.longitudinal_focusing == 'linear':
-            self.longitudinal_map = LinearMap([self.alpha], self.circumference,
-                    self.Q_s, D_x=self.D_x[0], D_y=self.D_y[0])
+            self.longitudinal_map = LinearMap(
+                [self.alpha],
+                self.circumference, self.Q_s,
+                D_x=self.D_x[one_turn_map_insert_idx],
+                D_y=self.D_y[one_turn_map_insert_idx]
+            )
         elif self.longitudinal_focusing == 'non-linear':
-            self.longitudinal_map = RFSystems(self.circumference, [self.h1, self.h2], [self.V1, self.V2], [self.dphi1, self.dphi2],
-                                        [self.alpha], self.gamma, self.p_increment,
-                                        D_x=self.D_x[0], D_y=self.D_y[0])
+            self.longitudinal_map = RFSystems(
+                self.circumference, [self.h1, self.h2],
+                [self.V1, self.V2], [self.dphi1, self.dphi2],
+                [self.alpha], self.gamma, self.p_increment,
+                D_x=self.D_x[one_turn_map_insert_idx],
+                D_y=self.D_y[one_turn_map_insert_idx]
+            )
         else:
             raise ValueError('ERROR: unknown focusing', self.longitudinal_focusing)
 
