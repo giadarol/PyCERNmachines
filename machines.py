@@ -4,7 +4,7 @@ import numpy as np
 from scipy.constants import c, e, m_p
 
 from PyHEADTAIL.general.element import Element
-from PyHEADTAIL.particles.generators import CutRFBucket6D, MatchRFBucket6D
+import PyHEADTAIL.particles.generators as gen
 from PyHEADTAIL.trackers.transverse_tracking import TransverseMap
 from PyHEADTAIL.trackers.detuners import Chromaticity, AmplitudeDetuning
 from PyHEADTAIL.trackers.simple_long_tracking import LinearMap, RFSystems
@@ -134,20 +134,22 @@ class Synchrotron(Element):
 
         beta_z    = np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
         sigma_dp  = sigma_z/beta_z
+        epsx_geo = epsn_x/self.betagamma
+        epsy_geo = epsn_y/self.betagamma
 
-        bunch = CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity, charge=self.charge, mass=self.mass,
-                circumference = self.circumference, gamma=self.gamma,
-                transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
-                sigma_z=sigma_z, sigma_dp=sigma_dp,
-                is_accepted=check_inside_bucket).generate()
-
-        if self.D_x[0] != 0:
-            self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
-            bunch.x += bunch.dp*self.D_x[0]
-        if self.D_y[0] != 0:
-            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
-            bunch.y += bunch.dp*self.D_y[0]
-
+        bunch = gen.ParticleGenerator(macroparticlenumber=n_macroparticles,
+                intensity=intensity, charge=self.charge, mass=self.mass,
+                circumference=self.circumference, gamma=self.gamma,
+                distribution_x=gen.gaussian2D(epsx_geo),
+                distribution_y=gen.gaussian2D(epsy_geo),
+                distribution_z=gen.cut_distribution(
+                    gen.gaussian2D_asymmetrical(sigma_u=sigma_z, sigma_up=sigma_dp),
+                    is_accepted=check_inside_bucket),
+                linear_matcher_x=gen.transverse_linear_matcher(
+                    alpha=self.alpha_x[0], beta=self.beta_x[0], dispersion=self.D_x[0]),
+                linear_matcher_y=gen.transverse_linear_matcher(
+                    alpha=self.alpha_y[0], beta=self.beta_y[0], dispersion=self.D_y[0])
+                ).generate()
 
         return bunch
 
@@ -160,18 +162,21 @@ class Synchrotron(Element):
         to the one specificed and should not change significantly during the
         Synchrotron motion.
         '''
-        bunch = MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
-                                charge=self.charge, mass=self.mass,
-                                circumference=self.circumference, gamma=self.gamma,
-                                epsn_x=epsn_x, epsn_y=epsn_y, epsn_z=epsn_z, sigma_z=sigma_z,
-                                transverse_map=self.transverse_map,
-                                rf_bucket=self.longitudinal_map.get_bucket(gamma=self.gamma)).generate()
-        if self.D_x[0] != 0:
-            self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
-            bunch.x += bunch.dp*self.D_x[0]
-        if self.D_y[0] != 0:
-            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
-            bunch.y += bunch.dp*self.D_y[0]
+        epsx_geo = epsn_x/self.betagamma
+        epsy_geo = epsn_y/self.betagamma
 
+        bunch = gen.ParticleGenerator(macroparticlenumber=n_macroparticles,
+                intensity=intensity, charge=self.charge, mass=self.mass,
+                circumference=self.circumference, gamma=self.gamma,
+                distribution_x=gen.gaussian2D(epsx_geo),
+                distribution_y=gen.gaussian2D(epsy_geo),
+                distribution_z=gen.RF_bucket_distribution(
+                    rfbucket=self.longitudinal_map.get_bucket(gamma=self.gamma),
+                    sigma_z=sigma_z, epsn_z=epsn_z),
+                linear_matcher_x=gen.transverse_linear_matcher(
+                    alpha=self.alpha_x[0], beta=self.beta_x[0], dispersion=self.D_x[0]),
+                linear_matcher_y=gen.transverse_linear_matcher(
+                    alpha=self.alpha_y[0], beta=self.beta_y[0], dispersion=self.D_y[0])
+                ).generate()
 
         return bunch
