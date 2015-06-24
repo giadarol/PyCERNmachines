@@ -13,7 +13,11 @@ from PyHEADTAIL.trackers.simple_long_tracking import LinearMap, RFSystems
 class Synchrotron(Element):
 
     def __init__(self, *args, **kwargs):
-
+        '''
+        Currently (because the RFSystems tracking uses a verlet integrator)
+        the RFSystems element will be installed at s=circumference/2,
+        which is correct for the smooth approximation
+        '''
         for attr in kwargs.keys():
             if kwargs[attr] is not None:
                 print 'Synchrotron init. From kwargs: %s = %s'%(attr, repr(kwargs[attr]))
@@ -22,12 +26,25 @@ class Synchrotron(Element):
         self.create_transverse_map()
         self.create_longitudinal_map()
 
+        # create the one_turn map: install the longitudinal map at
+        # s = circumference/2
         self.one_turn_map = []
         for m in self.transverse_map:
             self.one_turn_map.append(m)
-        self.one_turn_map.append(self.longitudinal_map)
+
+        # compute the index of the element before which to insert
+        # the longitudinal map
+        if (len(self.one_turn_map) % 2 == 0):
+            insert_before = len(self.one_turn_map) // 2
+        else:
+            insert_before = len(self.one_turn_map) // 2 + 1
+        print insert_before
+        print self.one_turn_map
+        self.one_turn_map.insert(insert_before, self.longitudinal_map)
+        print self.one_turn_map
 
     def install_after_each_transverse_segment(self, element_to_add):
+        '''Attention: Do not add any elements which update the dispersion!'''
         one_turn_map_new = []
         for element in self.one_turn_map:
             one_turn_map_new.append(element)
