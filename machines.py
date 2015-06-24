@@ -107,10 +107,12 @@ class Synchrotron(Element):
     def create_longitudinal_map(self):
 
         if self.longitudinal_focusing == 'linear':
-            self.longitudinal_map = LinearMap([self.alpha], self.circumference, self.Q_s)
+            self.longitudinal_map = LinearMap([self.alpha], self.circumference,
+                    self.Q_s, D_x=self.D_x[0], D_y=self.D_y[0])
         elif self.longitudinal_focusing == 'non-linear':
             self.longitudinal_map = RFSystems(self.circumference, [self.h1, self.h2], [self.V1, self.V2], [self.dphi1, self.dphi2],
-                                        [self.alpha], self.gamma, self.p_increment)
+                                        [self.alpha], self.gamma, self.p_increment,
+                                        D_x=self.D_x[0], D_y=self.D_y[0])
         else:
             raise ValueError('ERROR: unknown focusing', self.longitudinal_focusing)
 
@@ -126,7 +128,7 @@ class Synchrotron(Element):
         if self.longitudinal_focusing == 'linear':
             check_inside_bucket = lambda z,dp : np.array(len(z)*[True])
         elif self.longitudinal_focusing == 'non-linear':
-            check_inside_bucket = self.longitudinal_map.get_bucket(self.gamma).make_is_accepted(margin = 0.05)
+            check_inside_bucket = self.longitudinal_map.get_bucket(gamma=self.gamma).make_is_accepted(margin = 0.05)
         else:
             raise ValueError('Longitudinal_focusing not recognized!!!')
 
@@ -142,6 +144,10 @@ class Synchrotron(Element):
         if self.D_x[0] != 0:
             self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
+        if self.D_y[0] != 0:
+            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
+            bunch.y += bunch.dp*self.D_y[0]
+
 
         return bunch
 
@@ -159,9 +165,13 @@ class Synchrotron(Element):
                                 circumference=self.circumference, gamma=self.gamma,
                                 epsn_x=epsn_x, epsn_y=epsn_y, epsn_z=epsn_z, sigma_z=sigma_z,
                                 transverse_map=self.transverse_map,
-                                rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
+                                rf_bucket=self.longitudinal_map.get_bucket(gamma=self.gamma)).generate()
         if self.D_x[0] != 0:
             self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
+        if self.D_y[0] != 0:
+            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
+            bunch.y += bunch.dp*self.D_y[0]
+
 
         return bunch
