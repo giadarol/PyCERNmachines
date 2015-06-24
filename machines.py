@@ -20,7 +20,8 @@ class Synchrotron(Element):
         '''
         for attr in kwargs.keys():
             if kwargs[attr] is not None:
-                print 'Synchrotron init. From kwargs: %s = %s'%(attr, repr(kwargs[attr]))
+                self.prints('Synchrotron init. From kwargs: %s = %s'
+                            % (attr, repr(kwargs[attr])))
                 setattr(self, attr, kwargs[attr])
 
         self.create_transverse_map()
@@ -105,8 +106,7 @@ class Synchrotron(Element):
     def track(self, bunch, verbose = False):
         for m in self.one_turn_map:
             if verbose:
-                print 'Tracking through:'
-                print m
+                self.prints('Tracking through:\n' + str(m))
             m.track(bunch)
 
     def create_transverse_map(self):
