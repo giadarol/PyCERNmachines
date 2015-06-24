@@ -10,7 +10,7 @@ from PyHEADTAIL.trackers.detuners import Chromaticity, AmplitudeDetuning
 from PyHEADTAIL.trackers.simple_long_tracking import LinearMap, RFSystems
 
 
-class synchrotron(Element):
+class Synchrotron(Element):
 
     def __init__(self, *args, **kwargs):
 
@@ -77,6 +77,14 @@ class synchrotron(Element):
         return np.sqrt( e*np.abs(self.eta)*(self.h1*self.V1 + self.h2*self.V2)
                         / (2*np.pi*self.p0*self.beta*c) )
 
+    @property
+    def beta_z(self):
+        return np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
+
+    @property
+    def R(self):
+        return self.circumference/(2*np.pi)
+
     def track(self, bunch, verbose = False):
         for m in self.one_turn_map:
             if verbose:
@@ -85,11 +93,8 @@ class synchrotron(Element):
             m.track(bunch)
 
     def create_transverse_map(self):
-        try:
-            chromaticity = Chromaticity(self.Qp_x, self.Qp_y)
-        except TypeError as error:
-            chromaticity = Chromaticity([self.Qp_x], [self.Qp_y])
-            self.warns('Converted to new interface - takes chromaticities as lists.')
+
+        chromaticity = Chromaticity(self.Qp_x, self.Qp_y)
         amplitude_detuning = AmplitudeDetuning(self.app_x, self.app_y, self.app_xy)
 
         self.transverse_map = TransverseMap(
@@ -102,17 +107,19 @@ class synchrotron(Element):
     def create_longitudinal_map(self):
 
         if self.longitudinal_focusing == 'linear':
-            self.longitudinal_map = LinearMap([self.alpha], self.circumference, self.Q_s)
+            self.longitudinal_map = LinearMap([self.alpha], self.circumference,
+                    self.Q_s, D_x=self.D_x[0], D_y=self.D_y[0])
         elif self.longitudinal_focusing == 'non-linear':
             self.longitudinal_map = RFSystems(self.circumference, [self.h1, self.h2], [self.V1, self.V2], [self.dphi1, self.dphi2],
-                                        [self.alpha], self.gamma, self.p_increment)
+                                        [self.alpha], self.gamma, self.p_increment,
+                                        D_x=self.D_x[0], D_y=self.D_y[0])
         else:
             raise ValueError('ERROR: unknown focusing', self.longitudinal_focusing)
 
     def generate_6D_Gaussian_bunch(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
         '''
         Generates a 6D Gaussian distribution of particles which is transversely
-        matched to the synchrotron. Longitudinally, the distribution is matched
+        matched to the Synchrotron. Longitudinally, the distribution is matched
         only in terms of linear focusing. For a non-linear bucket, the Gaussian
         distribution is cut along the separatrix (with some margin) and will
         gradually filament into the bucket. This will change the specified bunch
@@ -121,15 +128,15 @@ class synchrotron(Element):
         if self.longitudinal_focusing == 'linear':
             check_inside_bucket = lambda z,dp : np.array(len(z)*[True])
         elif self.longitudinal_focusing == 'non-linear':
-            check_inside_bucket = self.longitudinal_map.get_bucket(self.gamma).make_is_accepted(margin = 0.05)
+            check_inside_bucket = self.longitudinal_map.get_bucket(gamma=self.gamma).make_is_accepted(margin = 0.05)
         else:
             raise ValueError('Longitudinal_focusing not recognized!!!')
 
-        beta_z    = self.eta*self.circumference/2./np.pi/self.Q_s
+        beta_z    = np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
         sigma_dp  = sigma_z/beta_z
 
         bunch = CutRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity, charge=self.charge, mass=self.mass,
-                circumference = self.circumference, gamma_reference=self.gamma,
+                circumference = self.circumference, gamma=self.gamma,
                 transverse_map=self.transverse_map, epsn_x=epsn_x, epsn_y=epsn_y,
                 sigma_z=sigma_z, sigma_dp=sigma_dp,
                 is_accepted=check_inside_bucket).generate()
@@ -137,26 +144,34 @@ class synchrotron(Element):
         if self.D_x[0] != 0:
             self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
+        if self.D_y[0] != 0:
+            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
+            bunch.y += bunch.dp*self.D_y[0]
+
 
         return bunch
 
-    def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
+    def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z=None, epsn_z=None):
         '''
         Generates a 6D Gaussian distribution of particles which is transversely
         as well as longitudinally matched. The distribution is found iteratively
         to exactly yield the given bunch length while at the same time being
         stationary in the non-linear bucket. Thus, the bunch length should amount
         to the one specificed and should not change significantly during the
-        synchrotron motion.
+        Synchrotron motion.
         '''
         bunch = MatchRFBucket6D(macroparticlenumber=n_macroparticles, intensity=intensity,
                                 charge=self.charge, mass=self.mass,
-                                circumference=self.circumference, gamma_reference=self.gamma,
-                                epsn_x=epsn_x, epsn_y=epsn_y, sigma_z=sigma_z,
+                                circumference=self.circumference, gamma=self.gamma,
+                                epsn_x=epsn_x, epsn_y=epsn_y, epsn_z=epsn_z, sigma_z=sigma_z,
                                 transverse_map=self.transverse_map,
-                                rf_bucket=self.longitudinal_map.get_bucket(self.gamma)).generate()
+                                rf_bucket=self.longitudinal_map.get_bucket(gamma=self.gamma)).generate()
         if self.D_x[0] != 0:
             self.warns(('Correcting for (horizontal) dispersion {:g} m at first segment!\n').format(self.D_x[0]))
             bunch.x += bunch.dp*self.D_x[0]
+        if self.D_y[0] != 0:
+            self.warns(('Correcting for (vertical) dispersion {:g} m at first segment!\n').format(self.D_y[0]))
+            bunch.y += bunch.dp*self.D_y[0]
+
 
         return bunch
