@@ -5,8 +5,17 @@ from scipy.constants import c, e, m_p
 
 from PyHEADTAIL.general.element import Element
 import PyHEADTAIL.particles.generators as gen
-from PyHEADTAIL.trackers.transverse_tracking import TransverseMap
-from PyHEADTAIL.trackers.detuners import Chromaticity, AmplitudeDetuning
+try:
+    from PyHEADTAIL.trackers.transverse_tracking_cython import TransverseMap
+    from PyHEADTAIL.trackers.detuners_cython import (Chromaticity,
+                                                     AmplitudeDetuning)
+except ImportError as e:
+    print ("*** Warning: could not import cython variants of trackers, "
+           "did you cythonize (use the following command)?\n"
+           "$ ./install \n"
+           "Falling back to (slower) python version.")
+    from PyHEADTAIL.trackers.transverse_tracking import TransverseMap
+    from PyHEADTAIL.trackers.detuners import Chromaticity, AmplitudeDetuning
 from PyHEADTAIL.trackers.simple_long_tracking import LinearMap, RFSystems
 
 
@@ -14,17 +23,21 @@ class Synchrotron(Element):
 
     def __init__(self, *args, **kwargs):
         '''
-        Currently (because the RFSystems tracking uses a verlet integrator)
-        the RFSystems element will be installed at s=circumference/2,
-        which is correct for the smooth approximation
+        Currently (because the RFSystems tracking uses a Verlet
+        velocity integrator) the RFSystems element will be installed at
+        s == circumference/2, which is correct for the smooth
+        approximation.
         '''
+        self.chromaticity_on = kwargs.pop('chromaticity_on', True)
+        self.amplitude_detuning_on = kwargs.pop('amplitude_detuning_on', True)
         for attr in kwargs.keys():
             if kwargs[attr] is not None:
                 self.prints('Synchrotron init. From kwargs: %s = %s'
                             % (attr, repr(kwargs[attr])))
                 setattr(self, attr, kwargs[attr])
 
-        self.create_transverse_map()
+        self.create_transverse_map(self.chromaticity_on,
+                                   self.amplitude_detuning_on)
 
         # create the one_turn map: install the longitudinal map at
         # s = circumference/2
@@ -34,12 +47,11 @@ class Synchrotron(Element):
 
         # compute the index of the element before which to insert
         # the longitudinal map
-        if (len(self.one_turn_map) % 2 == 0):
-            insert_before = len(self.one_turn_map) // 2
-        else:
-            insert_before = len(self.one_turn_map) // 2 + 1
+        for insert_before, si in enumerate(self.s):
+            if si > 0.5 * self.circumference:
+                break
         n_segments = len(self.transverse_map)
-        self.create_longitudinal_map(insert_before % n_segments)
+        self.create_longitudinal_map(insert_before)
         self.one_turn_map.insert(insert_before, self.longitudinal_map)
 
     def install_after_each_transverse_segment(self, element_to_add):
@@ -101,23 +113,28 @@ class Synchrotron(Element):
     def R(self):
         return self.circumference/(2*np.pi)
 
-    def track(self, bunch, verbose = False):
+    def track(self, bunch, verbose=False):
         for m in self.one_turn_map:
             if verbose:
                 self.prints('Tracking through:\n' + str(m))
             m.track(bunch)
 
-    def create_transverse_map(self):
+    def create_transverse_map(self, chromaticity_on=True,
+                              amplitude_detuning_on=True):
 
-        chromaticity = Chromaticity(self.Qp_x, self.Qp_y)
-        amplitude_detuning = AmplitudeDetuning(self.app_x, self.app_y, self.app_xy)
+        detuners = []
+        if chromaticity_on:
+            detuners.append(Chromaticity(self.Qp_x, self.Qp_y))
+        if amplitude_detuning_on:
+            detuners.append(
+                AmplitudeDetuning(self.app_x, self.app_y, self.app_xy)
+            )
 
         self.transverse_map = TransverseMap(
             self.circumference, self.s,
             self.alpha_x, self.beta_x, self.D_x,
             self.alpha_y, self.beta_y, self.D_y,
-            self.Q_x, self.Q_y,
-            chromaticity, amplitude_detuning)
+            self.Q_x, self.Q_y, *detuners)
 
     def create_longitudinal_map(self, one_turn_map_insert_idx=0):
 
@@ -137,21 +154,24 @@ class Synchrotron(Element):
                 D_y=self.D_y[one_turn_map_insert_idx]
             )
         else:
-            raise ValueError('ERROR: unknown focusing', self.longitudinal_focusing)
+            raise ValueError('ERROR: unknown focusing',
+                             self.longitudinal_focusing)
 
-    def generate_6D_Gaussian_bunch(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z):
+    def generate_6D_Gaussian_bunch(self, n_macroparticles, intensity,
+                                   epsn_x, epsn_y, sigma_z):
         '''
-        Generates a 6D Gaussian distribution of particles which is transversely
-        matched to the Synchrotron. Longitudinally, the distribution is matched
-        only in terms of linear focusing. For a non-linear bucket, the Gaussian
-        distribution is cut along the separatrix (with some margin) and will
-        gradually filament into the bucket. This will change the specified bunch
-        length.
+        Generates a 6D Gaussian distribution of particles which is
+        transversely matched to the Synchrotron. Longitudinally, the
+        distribution is matched only in terms of linear focusing.
+        For a non-linear bucket, the Gaussian distribution is cut along
+        the separatrix (with some margin) and will gradually filament
+        into the bucket. This will change the specified bunch length.
         '''
         if self.longitudinal_focusing == 'linear':
             check_inside_bucket = lambda z,dp : np.array(len(z)*[True])
         elif self.longitudinal_focusing == 'non-linear':
-            check_inside_bucket = self.longitudinal_map.get_bucket(gamma=self.gamma).make_is_accepted(margin = 0.05)
+            check_inside_bucket = self.longitudinal_map.get_bucket(
+                gamma=self.gamma).make_is_accepted(margin=0.05)
         else:
             raise ValueError('Longitudinal_focusing not recognized!!!')
 
@@ -166,24 +186,30 @@ class Synchrotron(Element):
                 distribution_x=gen.gaussian2D(epsx_geo),
                 distribution_y=gen.gaussian2D(epsy_geo),
                 distribution_z=gen.cut_distribution(
-                    gen.gaussian2D_asymmetrical(sigma_u=sigma_z, sigma_up=sigma_dp),
+                    gen.gaussian2D_asymmetrical(
+                        sigma_u=sigma_z, sigma_up=sigma_dp),
                     is_accepted=check_inside_bucket),
                 linear_matcher_x=gen.transverse_linear_matcher(
-                    alpha=self.alpha_x[0], beta=self.beta_x[0], dispersion=self.D_x[0]),
+                    alpha=self.alpha_x[0], beta=self.beta_x[0],
+                    dispersion=self.D_x[0]),
                 linear_matcher_y=gen.transverse_linear_matcher(
-                    alpha=self.alpha_y[0], beta=self.beta_y[0], dispersion=self.D_y[0])
+                    alpha=self.alpha_y[0], beta=self.beta_y[0],
+                    dispersion=self.D_y[0])
                 ).generate()
 
         return bunch
 
-    def generate_6D_Gaussian_bunch_matched(self, n_macroparticles, intensity, epsn_x, epsn_y, sigma_z=None, epsn_z=None):
+    def generate_6D_Gaussian_bunch_matched(
+            self, n_macroparticles, intensity, epsn_x, epsn_y,
+            sigma_z=None, epsn_z=None):
         '''
-        Generates a 6D Gaussian distribution of particles which is transversely
-        as well as longitudinally matched. The distribution is found iteratively
-        to exactly yield the given bunch length while at the same time being
-        stationary in the non-linear bucket. Thus, the bunch length should amount
-        to the one specificed and should not change significantly during the
-        Synchrotron motion.
+        Generates a 6D Gaussian distribution of particles which is
+        transversely as well as longitudinally matched.
+        The distribution is found iteratively to exactly yield the
+        given bunch length while at the same time being stationary in
+        the non-linear bucket. Thus, the bunch length should amount
+        to the one specificed and should not change significantly
+        during the synchrotron motion.
         '''
         epsx_geo = epsn_x/self.betagamma
         epsy_geo = epsn_y/self.betagamma
@@ -197,9 +223,11 @@ class Synchrotron(Element):
                     rfbucket=self.longitudinal_map.get_bucket(gamma=self.gamma),
                     sigma_z=sigma_z, epsn_z=epsn_z),
                 linear_matcher_x=gen.transverse_linear_matcher(
-                    alpha=self.alpha_x[0], beta=self.beta_x[0], dispersion=self.D_x[0]),
+                    alpha=self.alpha_x[0], beta=self.beta_x[0],
+                    dispersion=self.D_x[0]),
                 linear_matcher_y=gen.transverse_linear_matcher(
-                    alpha=self.alpha_y[0], beta=self.beta_y[0], dispersion=self.D_y[0])
+                    alpha=self.alpha_y[0], beta=self.beta_y[0],
+                    dispersion=self.D_y[0])
                 ).generate()
 
         return bunch
