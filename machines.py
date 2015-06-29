@@ -13,21 +13,37 @@ from PyHEADTAIL.trackers.simple_long_tracking import LinearMap, RFSystems
 class Synchrotron(Element):
 
     def __init__(self, *args, **kwargs):
-
+        '''
+        Currently (because the RFSystems tracking uses a verlet integrator)
+        the RFSystems element will be installed at s=circumference/2,
+        which is correct for the smooth approximation
+        '''
         for attr in kwargs.keys():
             if kwargs[attr] is not None:
-                print 'Synchrotron init. From kwargs: %s = %s'%(attr, repr(kwargs[attr]))
+                self.prints('Synchrotron init. From kwargs: %s = %s'
+                            % (attr, repr(kwargs[attr])))
                 setattr(self, attr, kwargs[attr])
 
         self.create_transverse_map()
-        self.create_longitudinal_map()
 
+        # create the one_turn map: install the longitudinal map at
+        # s = circumference/2
         self.one_turn_map = []
         for m in self.transverse_map:
             self.one_turn_map.append(m)
-        self.one_turn_map.append(self.longitudinal_map)
+
+        # compute the index of the element before which to insert
+        # the longitudinal map
+        if (len(self.one_turn_map) % 2 == 0):
+            insert_before = len(self.one_turn_map) // 2
+        else:
+            insert_before = len(self.one_turn_map) // 2 + 1
+        n_segments = len(self.transverse_map)
+        self.create_longitudinal_map(insert_before % n_segments)
+        self.one_turn_map.insert(insert_before, self.longitudinal_map)
 
     def install_after_each_transverse_segment(self, element_to_add):
+        '''Attention: Do not add any elements which update the dispersion!'''
         one_turn_map_new = []
         for element in self.one_turn_map:
             one_turn_map_new.append(element)
@@ -88,8 +104,7 @@ class Synchrotron(Element):
     def track(self, bunch, verbose = False):
         for m in self.one_turn_map:
             if verbose:
-                print 'Tracking through:'
-                print m
+                self.prints('Tracking through:\n' + str(m))
             m.track(bunch)
 
     def create_transverse_map(self):
@@ -104,15 +119,23 @@ class Synchrotron(Element):
             self.Q_x, self.Q_y,
             chromaticity, amplitude_detuning)
 
-    def create_longitudinal_map(self):
+    def create_longitudinal_map(self, one_turn_map_insert_idx=0):
 
         if self.longitudinal_focusing == 'linear':
-            self.longitudinal_map = LinearMap([self.alpha], self.circumference,
-                    self.Q_s, D_x=self.D_x[0], D_y=self.D_y[0])
+            self.longitudinal_map = LinearMap(
+                [self.alpha],
+                self.circumference, self.Q_s,
+                D_x=self.D_x[one_turn_map_insert_idx],
+                D_y=self.D_y[one_turn_map_insert_idx]
+            )
         elif self.longitudinal_focusing == 'non-linear':
-            self.longitudinal_map = RFSystems(self.circumference, [self.h1, self.h2], [self.V1, self.V2], [self.dphi1, self.dphi2],
-                                        [self.alpha], self.gamma, self.p_increment,
-                                        D_x=self.D_x[0], D_y=self.D_y[0])
+            self.longitudinal_map = RFSystems(
+                self.circumference, [self.h1, self.h2],
+                [self.V1, self.V2], [self.dphi1, self.dphi2],
+                [self.alpha], self.gamma, self.p_increment,
+                D_x=self.D_x[one_turn_map_insert_idx],
+                D_y=self.D_y[one_turn_map_insert_idx]
+            )
         else:
             raise ValueError('ERROR: unknown focusing', self.longitudinal_focusing)
 
