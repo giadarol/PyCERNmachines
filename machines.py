@@ -30,6 +30,12 @@ class Synchrotron(Element):
         '''
         self.chromaticity_on = kwargs.pop('chromaticity_on', True)
         self.amplitude_detuning_on = kwargs.pop('amplitude_detuning_on', True)
+
+        if not hasattr(self, 'longitudinal_focusing'):
+            self.longitudinal_focusing = kwargs.pop('longitudinal_focusing')
+        if self.longitudinal_focusing not in ['linear', 'non-linear']:
+            raise ValueError('longitudinal_focusing not recognized!!!')
+
         for attr in kwargs.keys():
             if kwargs[attr] is not None:
                 self.prints('Synchrotron init. From kwargs: %s = %s'
@@ -121,7 +127,6 @@ class Synchrotron(Element):
 
     def create_transverse_map(self, chromaticity_on=True,
                               amplitude_detuning_on=True):
-
         detuners = []
         if chromaticity_on:
             detuners.append(Chromaticity(self.Qp_x, self.Qp_y))
@@ -137,7 +142,6 @@ class Synchrotron(Element):
             self.Q_x, self.Q_y, *detuners)
 
     def create_longitudinal_map(self, one_turn_map_insert_idx=0):
-
         if self.longitudinal_focusing == 'linear':
             self.longitudinal_map = LinearMap(
                 [self.alpha],
@@ -154,17 +158,16 @@ class Synchrotron(Element):
                 D_y=self.D_y[one_turn_map_insert_idx]
             )
         else:
-            raise ValueError('ERROR: unknown focusing',
-                             self.longitudinal_focusing)
+            raise NotImplementedError(
+                'Something wrong with self.longitudinal_focusing')
 
     def generate_6D_Gaussian_bunch(self, n_macroparticles, intensity,
                                    epsn_x, epsn_y, sigma_z):
-        '''
-        Generates a 6D Gaussian distribution of particles which is
+        '''Generate a 6D Gaussian distribution of particles which is
         transversely matched to the Synchrotron. Longitudinally, the
         distribution is matched only in terms of linear focusing.
         For a non-linear bucket, the Gaussian distribution is cut along
-        the separatrix (with some margin) and will gradually filament
+        the separatrix (with some margin). It will gradually filament
         into the bucket. This will change the specified bunch length.
         '''
         if self.longitudinal_focusing == 'linear':
@@ -173,7 +176,8 @@ class Synchrotron(Element):
             check_inside_bucket = self.longitudinal_map.get_bucket(
                 gamma=self.gamma).make_is_accepted(margin=0.05)
         else:
-            raise ValueError('Longitudinal_focusing not recognized!!!')
+            raise NotImplementedError(
+                'Something wrong with self.longitudinal_focusing')
 
         beta_z    = np.abs(self.eta)*self.circumference/2./np.pi/self.Q_s
         sigma_dp  = sigma_z/beta_z
@@ -202,15 +206,18 @@ class Synchrotron(Element):
     def generate_6D_Gaussian_bunch_matched(
             self, n_macroparticles, intensity, epsn_x, epsn_y,
             sigma_z=None, epsn_z=None):
-        '''
-        Generates a 6D Gaussian distribution of particles which is
+        '''Generate a 6D Gaussian distribution of particles which is
         transversely as well as longitudinally matched.
         The distribution is found iteratively to exactly yield the
         given bunch length while at the same time being stationary in
         the non-linear bucket. Thus, the bunch length should amount
         to the one specificed and should not change significantly
         during the synchrotron motion.
+
+        Requires self.longitudinal_focusing == 'non-linear'
+        for the bucket.
         '''
+        assert self.longitudinal_focusing == 'non-linear'
         epsx_geo = epsn_x/self.betagamma
         epsy_geo = epsn_y/self.betagamma
 
@@ -231,3 +238,4 @@ class Synchrotron(Element):
                 ).generate()
 
         return bunch
+

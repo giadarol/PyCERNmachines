@@ -39,12 +39,12 @@ class PSB(Synchrotron):
             self.app_y   = 0.0000e-9
             self.app_xy  = 0
 
-            self.alpha_x = 0 * np.ones(self.n_segments)
-            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments)
-            self.D_x     = 0 * np.ones(self.n_segments)
-            self.alpha_y = 0 * np.ones(self.n_segments)
-            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments)
-            self.D_y     = 0 * np.ones(self.n_segments)
+            self.alpha_x = 0 * np.ones(self.n_segments + 1)
+            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments + 1)
+            self.D_x     = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y = 0 * np.ones(self.n_segments + 1)
+            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments + 1)
+            self.D_y     = 0 * np.ones(self.n_segments + 1)
 
             self.alpha       = 0.06
             self.h1          = 1
@@ -73,12 +73,12 @@ class PSB(Synchrotron):
             self.app_y   = 0.0000e-9
             self.app_xy  = 0
 
-            self.alpha_x = 0 * np.ones(self.n_segments)
-            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments)
-            self.D_x     = 0 * np.ones(self.n_segments)
-            self.alpha_y = 0 * np.ones(self.n_segments)
-            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments)
-            self.D_y     = 0 * np.ones(self.n_segments)
+            self.alpha_x = 0 * np.ones(self.n_segments + 1)
+            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments + 1)
+            self.D_x     = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y = 0 * np.ones(self.n_segments + 1)
+            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments + 1)
+            self.D_y     = 0 * np.ones(self.n_segments + 1)
 
             self.alpha       = 0.06
             self.h1          = 1
@@ -107,12 +107,12 @@ class PSB(Synchrotron):
             self.app_y   = 0.0000e-9
             self.app_xy  = 0
 
-            self.alpha_x = 0 * np.ones(self.n_segments)
-            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments)
-            self.D_x     = 0 * np.ones(self.n_segments)
-            self.alpha_y = 0 * np.ones(self.n_segments)
-            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments)
-            self.D_y     = 0 * np.ones(self.n_segments)
+            self.alpha_x = 0 * np.ones(self.n_segments + 1)
+            self.beta_x  = self.circumference/(2*np.pi*self.Q_x) * np.ones(self.n_segments + 1)
+            self.D_x     = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y = 0 * np.ones(self.n_segments + 1)
+            self.beta_y  = self.circumference/(2*np.pi*self.Q_y) * np.ones(self.n_segments + 1)
+            self.D_y     = 0 * np.ones(self.n_segments + 1)
 
             self.alpha       = 0.06
             self.h1          = 1
@@ -153,12 +153,12 @@ class SPS(Synchrotron):
 
             self.gamma = 27.7
 
-            self.alpha_x        = 0 * np.ones(self.n_segments)
-            self.beta_x         = 54.6 * np.ones(self.n_segments)
-            self.D_x            = 0 * np.ones(self.n_segments)
-            self.alpha_y        = 0 * np.ones(self.n_segments)
-            self.beta_y         = 54.6 * np.ones(self.n_segments)
-            self.D_y            = 0 * np.ones(self.n_segments)
+            self.alpha_x        = 0 * np.ones(self.n_segments + 1)
+            self.beta_x         = 54.6 * np.ones(self.n_segments + 1)
+            self.D_x            = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y        = 0 * np.ones(self.n_segments + 1)
+            self.beta_y         = 54.6 * np.ones(self.n_segments + 1)
+            self.D_y            = 0 * np.ones(self.n_segments + 1)
 
             self.Q_x            = 20.13
             self.Q_y            = 20.18
@@ -184,12 +184,12 @@ class SPS(Synchrotron):
 
             self.gamma = 27.7
 
-            self.alpha_x        = 0 * np.ones(self.n_segments)
-            self.beta_x         = 42. * np.ones(self.n_segments)
-            self.D_x            = 0 * np.ones(self.n_segments)
-            self.alpha_y        = 0 * np.ones(self.n_segments)
-            self.beta_y         = 42. * np.ones(self.n_segments)
-            self.D_y            = 0 * np.ones(self.n_segments)
+            self.alpha_x        = 0 * np.ones(self.n_segments + 1)
+            self.beta_x         = 42. * np.ones(self.n_segments + 1)
+            self.D_x            = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y        = 0 * np.ones(self.n_segments + 1)
+            self.beta_y         = 42. * np.ones(self.n_segments + 1)
+            self.D_y            = 0 * np.ones(self.n_segments + 1)
 
             self.Q_x            = 26.13
             self.Q_y            = 26.18
@@ -215,12 +215,12 @@ class SPS(Synchrotron):
 
             self.gamma = np.sqrt((450e9*e/(m_p*c**2))**2+1)
 
-            self.alpha_x        = 0 * np.ones(self.n_segments)
-            self.beta_x         = 54.6 * np.ones(self.n_segments)
-            self.D_x            = 0 * np.ones(self.n_segments)
-            self.alpha_y        = 0 * np.ones(self.n_segments)
-            self.beta_y         = 54.6 * np.ones(self.n_segments)
-            self.D_y            = 0 * np.ones(self.n_segments)
+            self.alpha_x        = 0 * np.ones(self.n_segments + 1)
+            self.beta_x         = 54.6 * np.ones(self.n_segments + 1)
+            self.D_x            = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y        = 0 * np.ones(self.n_segments + 1)
+            self.beta_y         = 54.6 * np.ones(self.n_segments + 1)
+            self.D_y            = 0 * np.ones(self.n_segments + 1)
 
             self.Q_x            = 20.13
             self.Q_y            = 20.18
@@ -272,12 +272,12 @@ class LHC(Synchrotron):
             self.Q_x     = 64.28
             self.Q_y     = 59.31
 
-            self.alpha_x = 0 * np.ones(self.n_segments)
-            self.beta_x  = self.R/self.Q_x * np.ones(self.n_segments)
-            self.D_x     = 0 * np.ones(self.n_segments)
-            self.alpha_y = 0 * np.ones(self.n_segments)
-            self.beta_y  = self.R/self.Q_y * np.ones(self.n_segments)
-            self.D_y     = 0 * np.ones(self.n_segments)
+            self.alpha_x = 0 * np.ones(self.n_segments + 1)
+            self.beta_x  = self.R/self.Q_x * np.ones(self.n_segments + 1)
+            self.D_x     = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y = 0 * np.ones(self.n_segments + 1)
+            self.beta_y  = self.R/self.Q_y * np.ones(self.n_segments + 1)
+            self.D_y     = 0 * np.ones(self.n_segments + 1)
 
             self.Qp_x    = 0
             self.Qp_y    = 0
@@ -306,12 +306,12 @@ class LHC(Synchrotron):
             self.Q_x     = 64.31
             self.Q_y     = 59.32
 
-            self.alpha_x = 0 * np.ones(self.n_segments)
-            self.beta_x  = self.R/self.Q_x * np.ones(self.n_segments)
-            self.D_x     = 0 * np.ones(self.n_segments)
-            self.alpha_y = 0 * np.ones(self.n_segments)
-            self.beta_y  = self.R/self.Q_y * np.ones(self.n_segments)
-            self.D_y     = 0 * np.ones(self.n_segments)
+            self.alpha_x = 0 * np.ones(self.n_segments + 1)
+            self.beta_x  = self.R/self.Q_x * np.ones(self.n_segments + 1)
+            self.D_x     = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y = 0 * np.ones(self.n_segments + 1)
+            self.beta_y  = self.R/self.Q_y * np.ones(self.n_segments + 1)
+            self.D_y     = 0 * np.ones(self.n_segments + 1)
 
             self.Qp_x    = 0
             self.Qp_y    = 0
@@ -360,12 +360,12 @@ class HLLHC(Synchrotron):
             self.Q_x     = 62.31
             self.Q_y     = 60.32
 
-            self.alpha_x = 0 * np.ones(self.n_segments)
-            self.beta_x  = self.R/self.Q_x * np.ones(self.n_segments)
-            self.D_x     = 0 * np.ones(self.n_segments)
-            self.alpha_y = 0 * np.ones(self.n_segments)
-            self.beta_y  = self.R/self.Q_y * np.ones(self.n_segments)
-            self.D_y     = 0 * np.ones(self.n_segments)
+            self.alpha_x = 0 * np.ones(self.n_segments + 1)
+            self.beta_x  = self.R/self.Q_x * np.ones(self.n_segments + 1)
+            self.D_x     = 0 * np.ones(self.n_segments + 1)
+            self.alpha_y = 0 * np.ones(self.n_segments + 1)
+            self.beta_y  = self.R/self.Q_y * np.ones(self.n_segments + 1)
+            self.D_y     = 0 * np.ones(self.n_segments + 1)
 
             self.Qp_x    = 0
             self.Qp_y    = 0
